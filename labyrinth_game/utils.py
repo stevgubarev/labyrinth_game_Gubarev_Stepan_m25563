@@ -68,6 +68,8 @@ def solve_puzzle(game_state: dict) -> None:
 
     print("Неверно. Попробуйте снова.")
 
+    if room_name == "trap_room":
+         trigger_trap(game_state)
 
 def attempt_open_treasure(game_state: dict) -> None:
     """Пытается открыть сундук в комнате сокровищ: ключом или кодом."""
