@@ -1,1 +1,15 @@
-# labyrinth_game_Gubarev_Stepan_m25563
+# Labyrinth Treasure Game
+
+Консольная текстовая adventure-игра на Python: игрок перемещается по комнатам лабиринта, собирает предметы, решает загадки и пытается открыть сундук с сокровищами.
+
+## Требования
+- Python 3.10+
+- Poetry
+- make
+
+## Установка
+
+Через make:
+```bash
+make install
+
