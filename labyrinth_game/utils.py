@@ -1,6 +1,17 @@
 """Вспомогательные функции: описание комнат и помощь."""
 
-from labyrinth_game.constants import COMMANDS, PUZZLE_REWARDS, ROOMS
+import math
+
+from labyrinth_game.constants import (
+    COMMANDS,
+    EVENT_PROBABILITY_MODULO,
+    EVENT_TRIGGER_VALUE,
+    EVENT_VARIANTS,
+    PUZZLE_REWARDS,
+    ROOMS,
+    TRAP_DAMAGE_MODULO,
+    TRAP_DEATH_THRESHOLD,
+)
 
 
 def describe_current_room(game_state: dict) -> None:
@@ -101,4 +112,62 @@ def attempt_open_treasure(game_state: dict) -> None:
         return
 
     print("Код неверный.")
+
+def pseudo_random(seed: int, modulo: int) -> int:
+    """Детерминированный псевдослучайный int в диапазоне [0, modulo)."""
+    if modulo <= 0:
+        return 0
+
+    x = math.sin(seed * 12.9898) * 43758.5453
+    frac = x - math.floor(x)
+    return int(frac * modulo)
+
+
+def trigger_trap(game_state: dict) -> None:
+    """Срабатывание ловушки: потеря предмета или шанс поражения."""
+    print("Ловушка активирована! Пол стал дрожать...")
+
+    inventory: list[str] = game_state["player_inventory"]
+    if inventory:
+        index = pseudo_random(game_state["steps_taken"], len(inventory))
+        lost_item = inventory.pop(index)
+        print(f"Вы потеряли предмет: {lost_item}")
+        return
+
+    damage_roll = pseudo_random(game_state["steps_taken"], TRAP_DAMAGE_MODULO)
+    if damage_roll < TRAP_DEATH_THRESHOLD:
+        print("Вы не успели увернуться... Вы проиграли.")
+        game_state["game_over"] = True
+        return
+
+    print("Вам повезло: вы уцелели!")
+
+
+def random_event(game_state: dict) -> None:
+    """Иногда запускает случайное событие после перемещения."""
+    roll = pseudo_random(game_state["steps_taken"], EVENT_PROBABILITY_MODULO)
+    if roll != EVENT_TRIGGER_VALUE:
+        return
+
+    event_type = pseudo_random(game_state["steps_taken"] + 1, EVENT_VARIANTS)
+
+    room = ROOMS[game_state["current_room"]]
+    inventory: list[str] = game_state["player_inventory"]
+
+    if event_type == 0:
+        print("Вы замечаете на полу монетку.")
+        if "coin" not in room["items"]:
+            room["items"].append("coin")
+        return
+
+    if event_type == 1:
+        print("Вы слышите шорох где-то рядом...")
+        if "sword" in inventory:
+            print("Вы показываете меч — существо отступает.")
+        return
+
+    # event_type == 2
+    if game_state["current_room"] == "trap_room" and "torch" not in inventory:
+        print("В темноте вы наступаете на подозрительную плиту...")
+        trigger_trap(game_state)
 
