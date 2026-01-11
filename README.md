@@ -13,3 +13,5 @@
 ```bash
 make install
 
+[![asciinema demo](https://asciinema.org/a/KARLBXv47yzjdTC3.svg)](https://asciinema.org/a/KARLBXv47yzjdTC3)
+
